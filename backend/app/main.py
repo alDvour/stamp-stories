@@ -3,6 +3,7 @@ import secrets
 import uuid
 from pathlib import Path
 from typing import Annotated
+from fastapi.middleware.cors import CORSMiddleware
 
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, UploadFile
@@ -30,10 +31,12 @@ app = FastAPI(title="Collectible Stories API", version="1.0.0")
 origins = [x.strip() for x in os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",") if x.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[
+        "https://frontend-tau-five-98.vercel.app",
+    ],
     allow_credentials=False,
-    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "X-Admin-Token"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
