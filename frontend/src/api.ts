@@ -1,3 +1,4 @@
+
 export type Collectible = {
   id: number
   title: string
@@ -6,27 +7,38 @@ export type Collectible = {
   created_at: string
 }
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
+const API_BASE = (
+  import.meta.env.VITE_API_BASE_URL ?? ''
+).replace(/\/+$/, '')
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+if (import.meta.env.PROD && !API_BASE) {
+  throw new Error('VITE_API_BASE_URL is missing in production')
+}
+
+async function request<T>(
+  path: string,
+  init?: RequestInit,
+): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, init)
+
   if (!response.ok) {
     let message = `Request failed (${response.status})`
     try {
       const body = await response.json()
       message = body.detail || message
     } catch {
-      // Keep the fallback message for non-JSON errors.
+      // Keep fallback message
     }
     throw new Error(message)
   }
+
   if (response.status === 204) return undefined as T
   return response.json() as Promise<T>
 }
 
 export function imageSrc(path: string) {
   if (/^https?:\/\//i.test(path)) return path
-  return `${API_BASE}${path}`
+  return `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`
 }
 
 export const api = {
